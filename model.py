@@ -7,23 +7,22 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import folium
 import logging
-
-# ==========================================
-# 0. CONFIGURATION & LOGGING SETUP (Step 1)
-# ==========================================
+ 
+# 0. CONFIGURATION & LOGGING SETUP  
+ 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Device configuration - Automatically detects hardware acceleration (Step 2)
+# Device configuration - Automatically detects hardware acceleration  
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device for training: {DEVICE}")
 
-# ==========================================
-# 1. DATA PROCESSING PIPELINE CLASS (Step 1)
-# ==========================================
+ 
+# 1. DATA PROCESSING PIPELINE CLASS  
+ 
 class FoodscapeDataPipeline:
     def __init__(self, filepath):
         self.filepath = filepath
@@ -70,9 +69,9 @@ class FoodscapeDataPipeline:
         logger.info(f"Feature normalization complete. Input dimension: {self.X_scaled.shape[1]}")
         return self.X_scaled
 
-# ==========================================
+ 
 # 2. PYTORCH AUTOENCODER MODEL
-# ==========================================
+ 
 class FoodscapeAutoencoder(nn.Module):
     def __init__(self, input_dim, embedding_dim=4):
         super().__init__()
@@ -96,9 +95,9 @@ class FoodscapeAutoencoder(nn.Module):
         reconstructed = self.decoder(embedding)
         return reconstructed, embedding
 
-# ==========================================
-# 3. EARLY STOPPING MECHANISM (Step 3)
-# ==========================================
+ 
+# 3. EARLY STOPPING MECHANISM  
+ 
 class EarlyStopping:
     def __init__(self, patience=50, min_delta=1e-5):
         self.patience = patience
@@ -116,16 +115,16 @@ class EarlyStopping:
             if self.counter >= self.patience:
                 self.early_stop = True
 
-# ==========================================
+ 
 # 4. MODEL TRAINER CLASS WITH DATALOADER & EARLY STOPPING
-# ==========================================
+
 class AutoencoderTrainer:
     def __init__(self, model, learning_rate=0.001, batch_size=8, patience=50):
         self.model = model.to(DEVICE)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.criterion = nn.MSELoss()
         self.batch_size = batch_size
-        self.early_stopping = EarlyStopping(patience=patience)  # Wired up here (Step 3)
+        self.early_stopping = EarlyStopping(patience=patience)   
 
     def fit(self, X_data, max_epochs=1000):
         tensor_x = torch.FloatTensor(X_data)
@@ -149,7 +148,7 @@ class AutoencoderTrainer:
                 
             total_epoch_loss = epoch_loss / len(X_data)
             
-            # Feed current loss to check early stopping threshold (Step 3)
+            # Feed current loss to check early stopping threshold  
             self.early_stopping(total_epoch_loss)
             
             if (epoch + 1) % 50 == 0 or self.early_stopping.early_stop:
@@ -160,10 +159,9 @@ class AutoencoderTrainer:
                 break
                 
         return self.model
-
-# ==========================================
+ 
 # 5. MAIN RUNTIME EXECUTION
-# ==========================================
+ 
 if __name__ == "__main__":
     pipeline = FoodscapeDataPipeline('foodscape_data.csv')
     district_df = pipeline.load_and_engineer_features()
