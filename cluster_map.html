@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_541e1b0c4ed84765db95a456a3973b9b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_541e1b0c4ed84765db95a456a3973b9b" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_541e1b0c4ed84765db95a456a3973b9b = L.map(
+                "map_541e1b0c4ed84765db95a456a3973b9b",
+                {
+                    center: [10.7769, 106.7009],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_7796a10d070d82b587949ee13a5d8fbb = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_7796a10d070d82b587949ee13a5d8fbb.addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+            var circle_marker_d764f199e4cde0a4cd5f4774b087b64b = L.circleMarker(
+                [10.749153660144927, 106.62248087898551],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_1e863bc75e51d42872a29ddb9b1146d1 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_384a83bbfba980a00c5863c0fa0615ce = $(`<div id="html_384a83bbfba980a00c5863c0fa0615ce" style="width: 100.0%; height: 100.0%;">Binh Tan — Cafe District</div>`)[0];
+                popup_1e863bc75e51d42872a29ddb9b1146d1.setContent(html_384a83bbfba980a00c5863c0fa0615ce);
+            
+        
+
+        circle_marker_d764f199e4cde0a4cd5f4774b087b64b.bindPopup(popup_1e863bc75e51d42872a29ddb9b1146d1)
+        ;
+
+        
+    
+    
+            var circle_marker_180936f52537bcee577a0bf80e9866c5 = L.circleMarker(
+                [10.799439732797858, 106.7061393780455],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_30e80e8cbcfa138539f34ab717c8ef97 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9cc62b2668cc34ec69b2c8a89b1083ba = $(`<div id="html_9cc62b2668cc34ec69b2c8a89b1083ba" style="width: 100.0%; height: 100.0%;">Binh Thanh — Central Hub</div>`)[0];
+                popup_30e80e8cbcfa138539f34ab717c8ef97.setContent(html_9cc62b2668cc34ec69b2c8a89b1083ba);
+            
+        
+
+        circle_marker_180936f52537bcee577a0bf80e9866c5.bindPopup(popup_30e80e8cbcfa138539f34ab717c8ef97)
+        ;
+
+        
+    
+    
+            var circle_marker_3865b8a66eb1ce16ab35f44f8bd44ebd = L.circleMarker(
+                [10.8288930689441, 106.66924493788821],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_a7059afb31ef0d343fa942dbb5cd1836 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_5bc165d3eab3a50dd8eb2057d3fbd217 = $(`<div id="html_5bc165d3eab3a50dd8eb2057d3fbd217" style="width: 100.0%; height: 100.0%;">Go Vap — Central Hub</div>`)[0];
+                popup_a7059afb31ef0d343fa942dbb5cd1836.setContent(html_5bc165d3eab3a50dd8eb2057d3fbd217);
+            
+        
+
+        circle_marker_3865b8a66eb1ce16ab35f44f8bd44ebd.bindPopup(popup_a7059afb31ef0d343fa942dbb5cd1836)
+        ;
+
+        
+    
+    
+            var circle_marker_6125bf75c0db3ceea997de3ac82e37d4 = L.circleMarker(
+                [10.791356571021993, 106.68636137231566],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_ba53f282a9a7097f5666597d2c5fa704 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7ca1620f629d93e100833e9f43c1d409 = $(`<div id="html_7ca1620f629d93e100833e9f43c1d409" style="width: 100.0%; height: 100.0%;">Phu Nhuan — Central Hub</div>`)[0];
+                popup_ba53f282a9a7097f5666597d2c5fa704.setContent(html_7ca1620f629d93e100833e9f43c1d409);
+            
+        
+
+        circle_marker_6125bf75c0db3ceea997de3ac82e37d4.bindPopup(popup_ba53f282a9a7097f5666597d2c5fa704)
+        ;
+
+        
+    
+    
+            var circle_marker_0dcb80b3af3412947f58712d9c0c6f84 = L.circleMarker(
+                [10.776206288386692, 106.69621868405524],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_f7bc46460e7d7aea1105ed673484ce77 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8772551cd0f7f85625e9addcc268aa0a = $(`<div id="html_8772551cd0f7f85625e9addcc268aa0a" style="width: 100.0%; height: 100.0%;">Quan 1 — Central Hub</div>`)[0];
+                popup_f7bc46460e7d7aea1105ed673484ce77.setContent(html_8772551cd0f7f85625e9addcc268aa0a);
+            
+        
+
+        circle_marker_0dcb80b3af3412947f58712d9c0c6f84.bindPopup(popup_f7bc46460e7d7aea1105ed673484ce77)
+        ;
+
+        
+    
+    
+            var circle_marker_76e09ba8de624bfd06b039ef96af3c20 = L.circleMarker(
+                [10.774119547225649, 106.6744177213317],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_912a29b3c5abb7e99c9296dcb751d569 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_57eb372fc1e2a99f3423801f3d6921a4 = $(`<div id="html_57eb372fc1e2a99f3423801f3d6921a4" style="width: 100.0%; height: 100.0%;">Quan 10 — Outer Districts</div>`)[0];
+                popup_912a29b3c5abb7e99c9296dcb751d569.setContent(html_57eb372fc1e2a99f3423801f3d6921a4);
+            
+        
+
+        circle_marker_76e09ba8de624bfd06b039ef96af3c20.bindPopup(popup_912a29b3c5abb7e99c9296dcb751d569)
+        ;
+
+        
+    
+    
+            var circle_marker_e2c390226cc7f3e0ce7befb4cd71c2bc = L.circleMarker(
+                [10.764806215, 106.6615253990625],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_bae869cd4a17e36baade85c4bfcac4e3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_db60911e6e631356bb4e26bd216a75e2 = $(`<div id="html_db60911e6e631356bb4e26bd216a75e2" style="width: 100.0%; height: 100.0%;">Quan 11 — Outer Districts</div>`)[0];
+                popup_bae869cd4a17e36baade85c4bfcac4e3.setContent(html_db60911e6e631356bb4e26bd216a75e2);
+            
+        
+
+        circle_marker_e2c390226cc7f3e0ce7befb4cd71c2bc.bindPopup(popup_bae869cd4a17e36baade85c4bfcac4e3)
+        ;
+
+        
+    
+    
+            var circle_marker_64dcc93b0573d2106ed95b007a7ac020 = L.circleMarker(
+                [10.853285910526315, 106.64690383947368],
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "red", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_f13a7c305919ac003b6d153c0ea5f693 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1d324b92b856087564a98cac5b43ebe6 = $(`<div id="html_1d324b92b856087564a98cac5b43ebe6" style="width: 100.0%; height: 100.0%;">Quan 12 — Mixed/Suburban</div>`)[0];
+                popup_f13a7c305919ac003b6d153c0ea5f693.setContent(html_1d324b92b856087564a98cac5b43ebe6);
+            
+        
+
+        circle_marker_64dcc93b0573d2106ed95b007a7ac020.bindPopup(popup_f13a7c305919ac003b6d153c0ea5f693)
+        ;
+
+        
+    
+    
+            var circle_marker_7d846d93334cac5897e60e7d95757e71 = L.circleMarker(
+                [10.793898940701755, 106.73978195614035],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_6393028cf0b0216cee998757258e8f35 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_970cd525ae1d913174cdf4f24308ffff = $(`<div id="html_970cd525ae1d913174cdf4f24308ffff" style="width: 100.0%; height: 100.0%;">Quan 2 — Outer Districts</div>`)[0];
+                popup_6393028cf0b0216cee998757258e8f35.setContent(html_970cd525ae1d913174cdf4f24308ffff);
+            
+        
+
+        circle_marker_7d846d93334cac5897e60e7d95757e71.bindPopup(popup_6393028cf0b0216cee998757258e8f35)
+        ;
+
+        
+    
+    
+            var circle_marker_61f2ad6b7000d16ef3732870b500e0a4 = L.circleMarker(
+                [10.777075758419619, 106.69209020621253],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_ce297b4969df5d5f69c24455385842db = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_15d17ee9f0dcbffb7bffc6d9df9a4b1f = $(`<div id="html_15d17ee9f0dcbffb7bffc6d9df9a4b1f" style="width: 100.0%; height: 100.0%;">Quan 3 — Central Hub</div>`)[0];
+                popup_ce297b4969df5d5f69c24455385842db.setContent(html_15d17ee9f0dcbffb7bffc6d9df9a4b1f);
+            
+        
+
+        circle_marker_61f2ad6b7000d16ef3732870b500e0a4.bindPopup(popup_ce297b4969df5d5f69c24455385842db)
+        ;
+
+        
+    
+    
+            var circle_marker_41c8ec38180171942a49f19fafeafff6 = L.circleMarker(
+                [10.768625511014493, 106.69753160995168],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_1d23899f76716c244c6122085a976cd5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fa98ce9e10f042a01e3c2925d49df38c = $(`<div id="html_fa98ce9e10f042a01e3c2925d49df38c" style="width: 100.0%; height: 100.0%;">Quan 4 — Central Hub</div>`)[0];
+                popup_1d23899f76716c244c6122085a976cd5.setContent(html_fa98ce9e10f042a01e3c2925d49df38c);
+            
+        
+
+        circle_marker_41c8ec38180171942a49f19fafeafff6.bindPopup(popup_1d23899f76716c244c6122085a976cd5)
+        ;
+
+        
+    
+    
+            var circle_marker_878f36536500caa92a13b718268d0f48 = L.circleMarker(
+                [10.762498966751268, 106.66696702969543],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_ce0c0f15a5e989c40dca5c7c1517cace = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7a36afeeda960b27f8eae81c4f7c1bec = $(`<div id="html_7a36afeeda960b27f8eae81c4f7c1bec" style="width: 100.0%; height: 100.0%;">Quan 5 — Outer Districts</div>`)[0];
+                popup_ce0c0f15a5e989c40dca5c7c1517cace.setContent(html_7a36afeeda960b27f8eae81c4f7c1bec);
+            
+        
+
+        circle_marker_878f36536500caa92a13b718268d0f48.bindPopup(popup_ce0c0f15a5e989c40dca5c7c1517cace)
+        ;
+
+        
+    
+    
+            var circle_marker_9714425a45e1348504374fef5e317788 = L.circleMarker(
+                [10.749432721468926, 106.63439073615818],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_0724aeca6c3a2a8a90173adfe2228dd3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_6219875c2e98c16c2646ccb040bfea33 = $(`<div id="html_6219875c2e98c16c2646ccb040bfea33" style="width: 100.0%; height: 100.0%;">Quan 6 — Cafe District</div>`)[0];
+                popup_0724aeca6c3a2a8a90173adfe2228dd3.setContent(html_6219875c2e98c16c2646ccb040bfea33);
+            
+        
+
+        circle_marker_9714425a45e1348504374fef5e317788.bindPopup(popup_0724aeca6c3a2a8a90173adfe2228dd3)
+        ;
+
+        
+    
+    
+            var circle_marker_cf1e1b5bc2951b3f8187313e19ef2067 = L.circleMarker(
+                [10.732975168393784, 106.71049696062175],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_0457dc1a900020faa374524f92df69d5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d301a0c03460778b18b3712118934c70 = $(`<div id="html_d301a0c03460778b18b3712118934c70" style="width: 100.0%; height: 100.0%;">Quan 7 — Cafe District</div>`)[0];
+                popup_0457dc1a900020faa374524f92df69d5.setContent(html_d301a0c03460778b18b3712118934c70);
+            
+        
+
+        circle_marker_cf1e1b5bc2951b3f8187313e19ef2067.bindPopup(popup_0457dc1a900020faa374524f92df69d5)
+        ;
+
+        
+    
+    
+            var circle_marker_734a1d6c06c032eb0aa08328f85d41c5 = L.circleMarker(
+                [10.741085625, 106.624882385],
+                {"bubblingMouseEvents": true, "color": "purple", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "purple", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_69c040e90fe2dea021b7025c5ecebea5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b51c3330f4bbccd9e44ccd390768ed1c = $(`<div id="html_b51c3330f4bbccd9e44ccd390768ed1c" style="width: 100.0%; height: 100.0%;">Quan 8 — Cafe District</div>`)[0];
+                popup_69c040e90fe2dea021b7025c5ecebea5.setContent(html_b51c3330f4bbccd9e44ccd390768ed1c);
+            
+        
+
+        circle_marker_734a1d6c06c032eb0aa08328f85d41c5.bindPopup(popup_69c040e90fe2dea021b7025c5ecebea5)
+        ;
+
+        
+    
+    
+            var circle_marker_6316d0f230ec3ed0fda930790be785af = L.circleMarker(
+                [10.852533072413793, 106.78954946982759],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_42e69e8bde82eda1bbeabdbaa8d5ad4c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_314a5850cf4e5116180b627fed083733 = $(`<div id="html_314a5850cf4e5116180b627fed083733" style="width: 100.0%; height: 100.0%;">Quan 9 — Central Hub</div>`)[0];
+                popup_42e69e8bde82eda1bbeabdbaa8d5ad4c.setContent(html_314a5850cf4e5116180b627fed083733);
+            
+        
+
+        circle_marker_6316d0f230ec3ed0fda930790be785af.bindPopup(popup_42e69e8bde82eda1bbeabdbaa8d5ad4c)
+        ;
+
+        
+    
+    
+            var circle_marker_3b8c46673fcd395ba5cf7fe45b293d0e = L.circleMarker(
+                [10.793230602479339, 106.6628997088843],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "green", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_e51d448ea652da9450a363707ccbeafa = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_603881ad3932a3bedaf39881a8f3871f = $(`<div id="html_603881ad3932a3bedaf39881a8f3871f" style="width: 100.0%; height: 100.0%;">Tan Binh — Central Hub</div>`)[0];
+                popup_e51d448ea652da9450a363707ccbeafa.setContent(html_603881ad3932a3bedaf39881a8f3871f);
+            
+        
+
+        circle_marker_3b8c46673fcd395ba5cf7fe45b293d0e.bindPopup(popup_e51d448ea652da9450a363707ccbeafa)
+        ;
+
+        
+    
+    
+            var circle_marker_f2d06ede1456dd5dd0497da130946c7f = L.circleMarker(
+                [10.788224633704736, 106.6488220144847],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_72f44004c7437b35b5d488382da6814b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_de7d4bc9448550aed27476a2929efe02 = $(`<div id="html_de7d4bc9448550aed27476a2929efe02" style="width: 100.0%; height: 100.0%;">Tan Phu — Outer Districts</div>`)[0];
+                popup_72f44004c7437b35b5d488382da6814b.setContent(html_de7d4bc9448550aed27476a2929efe02);
+            
+        
+
+        circle_marker_f2d06ede1456dd5dd0497da130946c7f.bindPopup(popup_72f44004c7437b35b5d488382da6814b)
+        ;
+
+        
+    
+    
+            var circle_marker_1331a9d12fe69a875a8c38ee1fc65b60 = L.circleMarker(
+                [10.863575847272728, 106.79040438727273],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 3}
+            ).addTo(map_541e1b0c4ed84765db95a456a3973b9b);
+        
+    
+        var popup_db48bc01219c3e265dfd01263e9a2c71 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8db61642202fd2b04d796c70a48553ce = $(`<div id="html_8db61642202fd2b04d796c70a48553ce" style="width: 100.0%; height: 100.0%;">Thu Duc — Outer Districts</div>`)[0];
+                popup_db48bc01219c3e265dfd01263e9a2c71.setContent(html_8db61642202fd2b04d796c70a48553ce);
+            
+        
+
+        circle_marker_1331a9d12fe69a875a8c38ee1fc65b60.bindPopup(popup_db48bc01219c3e265dfd01263e9a2c71)
+        ;
+
+        
+    
+</script>
+</html>
