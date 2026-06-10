@@ -1,95 +1,60 @@
-# HCMC-FoodScape — Food Landscape Spatial Analytics Engine
+# Food Landscape of Ho Chi Minh City
 
-An enterprise-grade, end-to-end Geospatial Data Engineering and Spatial Analytics pipeline. HCMC-FoodScape processes large-scale location intelligence data from Ho Chi Minh City's culinary ecosystem, deploying advanced GIS algorithms and spatial clustering models to analyze vendor density, optimize commercial site selection, and uncover urban culinary distribution patterns.
+A data-driven analysis of Saigon's food scene across 19 districts, combining OpenStreetMap data collection, exploratory analysis, and PyTorch-based district clustering.
 
----
+## Overview
 
-## Geospatial Ingestion & Analytics Architecture
-
-The core pipeline is engineered to ingest heterogeneous location data, convert it into geometric spatial data structures, and perform high-performance topological operations:
-
-<pre>
-+-------------------------+      +-------------------------+      +-------------------------+
-| Raw Location Feeds      | ---> |  GeoPandas Data Pipeline| ---> | Topological Operations  |
-| (OSM / Google Maps API) |      |   (CRS Transformation)  |      |   (Shapely Geometry)    |
-+-------------------------+      +-------------------------+      +-------------------------+
-                                                                               |
-+-------------------------+      +-------------------------+                   v
-|  Interactive Web Maps   | <--- | Spatial Clustering Engine| <--- +-------------------------+
-| (Folium / Streamlit App)|      |  (DBSCAN / Spatial KDE) |      |   HCMC District Polygons|
-+-------------------------+      +-------------------------+      |     (GeoJSON Layers)    |
-                                                                  +-------------------------+
-</pre>
-
----
-
-## Spatial Core & Mathematical Foundation
-
-Instead of treating coordinates as standard flat Euclidean points, the engine projectively transforms latitudes and longitudes into a local meter-based coordinate reference system (**WGS 84 / UTM Zone 48N - EPSG:32648**) to preserve true geographical distance and area metrics.
-
-### 1. Spatial Density Metric (Kernel Density Estimation)
-The localized culinary density $f(x)$ at any spatial vector coordinate $x$ is computed using a geographic Gaussian kernel:
-
-$$f(x) = \frac{1}{n b^2} \sum_{i=1}^{n} K\left(\frac{d(x, x_i)}{b}\right)$$
-
-Where:
-- $d(x, x_i)$: The exact geodesic/Haversine distance between the target point and known food vendor $x_i$.
-- $b$: The bandwidth radius (e.g., 500m buffer zone representing urban walking distance).
-
-### 2. Topological Spatial Joins
-Utilizes R-tree indexing natively via GeoPandas to execute high-speed Point-in-Polygon (PIP) operations:
-
-$$\text{IsWithin} = P_{\text{vendor}}(x, y) \cap \mathcal{M}_{\text{DistrictPolygon}}$$
-
----
-
-## Key Engineering Features
-
-- **Advanced Coordinate Normalization:** Automatically handles Coordinate Reference System (CRS) transformations, safely re-projecting raw GPS points (EPSG:4326) to localized metric grids (EPSG:32648) for precise distance calculations.
-- **Topological Overlay Analysis:** Employs `Shapely` to construct geographic buffer zones around transport hubs and universities, analyzing food landscape availability within a 500m radius.
-- **Unsupervised Spatial Clustering:** Implements density-based spatial clustering algorithms to automatically detect high-concentration "food hotspots" while filtering out spatial noise.
-- **High-Performance Geospatial Guardrails:** Seamlessly isolates heavy spatial cache indexing from compute tasks, allowing quick parsing of dense city-wide multi-polygon maps.
-
----
+This project investigates the spatial distribution and digital representation of food establishments across HCMC. A key finding is that OSM data reflects **digital presence**, not actual restaurant density — revealing a measurable digital divide between central and peripheral districts.
 
 ## Project Structure
+## 🔍 Key Findings
 
-<pre>
-Food-Landscape-Of-Ho-Chi-Minh-City/
-│
-├── src/
-│   ├── ingestion.py           # OSM/Google Maps API raw location data collector
-│   ├── geospatial_core.py     # CRS projection, Shapely buffering, and Spatial Joins
-│   ├── clustering.py          # Spatial density clustering & hotspot detection engine
-│   └── visualization.py       # Folium & Streamlit interactive map generation
-├── tests/
-│   ├── test_geospatial.py     # Unit tests verifying CRS projections & coordinate limits
-│   └── test_clustering.py     # Validation of spatial cluster output shapes
-├── data/
-│   └── hcmc_districts.geojson # Isolated geographic polygon boundaries of HCMC
-├── requirements.txt           # Pinpointed geospatial Python dependencies
-└── README.md                  # Comprehensive system and mathematical documentation
-</pre>
+- **Central districts dominate** — Quan 1 and Quan 3 account for 35%+ of all mapped places, driven by digital-active customer bases
+- **Digital inequality exists** — OSM coverage correlates with socioeconomic profile, not actual food density
+- **Quan 7 outlier** — Lowest unknown cuisine ratio (~0.34) despite low total places, driven by Phu My Hung expat community
+- **Restaurant > Cafe** — Despite perception, restaurants outnumber cafes 1.5:1 across the city
+- **Quan 12 cafe anomaly** — Disproportionately high cafe ratio suggests a localized cluster
 
----
+## Tech Stack
 
-## Execution & Visualization Guide
+- **Data Collection:** Python, Overpass API (OpenStreetMap)
+- **Analysis:** Pandas, Matplotlib, Seaborn
+- **ML Model:** PyTorch (Autoencoder), Scikit-learn (KMeans)
+- **Visualization:** Folium (interactive maps), Matplotlib
+- **Deployment:** AWS Lambda + S3 *(in progress)*
+- **Report:** LaTeX (Overleaf)
 
-### 1. Environment Installation
-Geospatial packages require specific binary matching. It is highly recommended to install via pip within a clean virtual environment:
+## Cluster Results
 
-<pre>
-# Clone the repository
-git clone https://github.com/vythwahh/Food-Landscape-Of-Ho-Chi-Minh-City-.git
-cd Food-Landscape-Of-Ho-Chi-Minh-City-
+| Cluster | Districts | Characteristics |
+|---|---|---|
+| Central Hub | Q1, Q3, Q4, Binh Thanh, Phu Nhuan | High density, diverse cuisine |
+| Urban Residential | Q5, Q10, Q11, Tan Binh, Go Vap | Mixed, moderate density |
+| Sparse/Developing | Q2, Q6, Q7, Q8, Binh Tan | Low density, high international |
+| Cafe Outlier | Quan 12 | Unusually high cafe ratio |
 
-# Install environment dependencies
-pip install -r requirements.txt
-</pre>
+## Limitations
 
-### 2. Executing the Spatial Analytics Pipeline
+- OSM data reflects digital presence, not actual restaurant count
+- Radius-based sampling may cause overlap between adjacent districts
+- Thu Duc's student dining zone lies across the Binh Duong provincial border
+- Future work: supplement with Foody/GrabFood data for ground truth comparison
 
-<pre>
-# Run the complete pipeline to process coordinates and render spatial maps
-python src/geospatial_core.py
-</pre>
+## How to Run
+
+```bash
+# Install dependencies
+pip install requests pandas matplotlib seaborn folium torch scikit-learn
+
+# Collect data
+python collect_data.py
+
+# Run EDA
+python eda.py
+
+# Train model & cluster
+python model.py
+
+# Run analysis
+python analysis.py
+``` 
