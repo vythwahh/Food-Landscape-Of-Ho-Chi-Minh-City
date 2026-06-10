@@ -2,23 +2,28 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import folium
 import logging
 
-# ==========================================
-# 0. CONFIGURATION & LOGGING SETUP (Step 1)
-# ==========================================
+ 
+# 0. CONFIGURATION & LOGGING SETUP  
+ 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# ==========================================
-# 1. DATA PROCESSING PIPELINE CLASS (Step 1)
-# ==========================================
+# Device configuration - Automatically detects hardware acceleration (Step 2)
+DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
+logger.info(f"Using device for training: {DEVICE}")
+
+ 
+# 1. DATA PROCESSING PIPELINE CLASS  
+ 
 class FoodscapeDataPipeline:
     def __init__(self, filepath):
         self.filepath = filepath
@@ -32,10 +37,8 @@ class FoodscapeDataPipeline:
         logger.info(f"Loading raw dataset from {self.filepath}")
         self.df = pd.read_csv(self.filepath)
         
-        # Aggregate total venue counts per district via GroupBy
         district_counts = self.df.groupby('district').size().rename('total_places')
         
-        # One-hot encoding indicators for vectorized operations
         self.df['is_restaurant'] = (self.df['amenity'] == 'restaurant').astype(int)
         self.df['is_cafe'] = (self.df['amenity'] == 'cafe').astype(int)
         self.df['is_fastfood'] = (self.df['amenity'] == 'fast_food').astype(int)
@@ -44,7 +47,6 @@ class FoodscapeDataPipeline:
         self.df['is_international'] = self.df['cuisine'].isin(['burger', 'pizza', 'japanese', 'korean']).astype(int)
         self.df['is_unknown'] = (self.df['cuisine'] == 'unknown').astype(int)
 
-        # Vectorized aggregation instead of slow for-loops
         grouped = self.df.groupby('district').agg(
             restaurant_ratio=('is_restaurant', 'mean'),
             cafe_ratio=('is_cafe', 'mean'),
@@ -68,9 +70,9 @@ class FoodscapeDataPipeline:
         logger.info(f"Feature normalization complete. Input dimension: {self.X_scaled.shape[1]}")
         return self.X_scaled
 
-# ==========================================
-# 2. PYTORCH AUTOENCODER MODEL (Legacy)
-# ==========================================
+ 
+# 2. PYTORCH AUTOENCODER MODEL
+ 
 class FoodscapeAutoencoder(nn.Module):
     def __init__(self, input_dim, embedding_dim=4):
         super().__init__()
@@ -94,11 +96,48 @@ class FoodscapeAutoencoder(nn.Module):
         reconstructed = self.decoder(embedding)
         return reconstructed, embedding
 
-# ==========================================
-# 3. MAIN RUNTIME EXECUTION
-# ==========================================
+ 
+# 3. MODEL TRAINER CLASS WITH DATALOADER  
+ 
+class AutoencoderTrainer:
+    def __init__(self, model, learning_rate=0.001, batch_size=8):
+        self.model = model.to(DEVICE)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        self.criterion = nn.MSELoss()
+        self.batch_size = batch_size
+
+    def fit(self, X_data, max_epochs=1000):
+        tensor_x = torch.FloatTensor(X_data)
+        dataset = TensorDataset(tensor_x, tensor_x)  # Self-reconstruction task
+        dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
+        
+        logger.info("Initiating model training loop via PyTorch DataLoader...")
+        
+        for epoch in range(max_epochs):
+            self.model.train()
+            epoch_loss = 0.0
+            
+            for batch_x, _ in dataloader:
+                batch_x = batch_x.to(DEVICE)
+                self.optimizer.zero_grad()
+                reconstructed, _ = self.model(batch_x)
+                loss = self.criterion(reconstructed, batch_x)
+                loss.backward()
+                self.optimizer.step()
+                epoch_loss += loss.item() * batch_x.size(0)
+                
+            total_epoch_loss = epoch_loss / len(X_data)
+            
+            if (epoch + 1) % 100 == 0:
+                logger.info(f"Epoch [{epoch+1}/{max_epochs}] - Training Loss: {total_epoch_loss:.5f}")
+                
+        return self.model
+
+ 
+# 4. MAIN RUNTIME EXECUTION
+ 
 if __name__ == "__main__":
-    # Using the new OOP Pipeline for Data Processing
+    # Data Processing Pipeline execution
     pipeline = FoodscapeDataPipeline('foodscape_data.csv')
     district_df = pipeline.load_and_engineer_features()
     X_scaled = pipeline.scale_features()
@@ -106,27 +145,17 @@ if __name__ == "__main__":
     print(district_df.set_index('district'))
     print(f"\nFeature matrix shape: {X_scaled.shape}")
 
-    # Legacy Training Loop
-    X_tensor = torch.FloatTensor(X_scaled)
+    # Initialize Model and the new Trainer Class (Step 2)
     model = FoodscapeAutoencoder(input_dim=X_scaled.shape[1], embedding_dim=4)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    criterion = nn.MSELoss()
+    trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8)
+    trained_model = trainer.fit(X_scaled, max_epochs=1000)
 
-    losses = []
-    for epoch in range(1000):
-        optimizer.zero_grad()
-        reconstructed, embedding = model(X_tensor)
-        loss = criterion(reconstructed, X_tensor)
-        loss.backward()
-        optimizer.step()
-        losses.append(loss.item())
-        if (epoch+1) % 100 == 0:
-            print(f"Epoch {epoch+1}/1000, Loss: {loss.item():.4f}")
-
-    # Get embeddings
+    # Extract latent embeddings safely using torch.no_grad()
+    trained_model.eval()
     with torch.no_grad():
-        _, embeddings = model(X_tensor)
-        embeddings_np = embeddings.numpy()
+        full_tensor = torch.FloatTensor(X_scaled).to(DEVICE)
+        _, embeddings_tensor = trained_model(full_tensor)
+        embeddings_np = embeddings_tensor.cpu().numpy()
 
     print("\nEmbeddings shape:", embeddings_np.shape)
 
@@ -144,7 +173,6 @@ if __name__ == "__main__":
 
     m = folium.Map(location=[10.7769, 106.7009], zoom_start=12)
 
-    # Use long name coordinate fallback for consistency
     df_raw = pipeline.df
     coords_cols = ['latitude', 'longitude'] if 'latitude' in df_raw.columns else ['lat', 'lon']
     district_coords = df_raw.groupby('district')[coords_cols].mean()
@@ -167,6 +195,6 @@ if __name__ == "__main__":
     m.save('cluster_map.html')
     print("Saved cluster_map.html")
 
-    # Save model weights
-    torch.save(model.state_dict(), 'foodscape_model.pth')
+    # Serialize model weights
+    torch.save(trained_model.state_dict(), 'foodscape_model.pth')
     print("Model saved to foodscape_model.pth")
