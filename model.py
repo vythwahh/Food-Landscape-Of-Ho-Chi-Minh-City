@@ -8,9 +8,9 @@ from sklearn.cluster import KMeans
 import folium
 import logging
 
- 
-# 0. CONFIGURATION & LOGGING SETUP  
- 
+# ==========================================
+# 0. CONFIGURATION & LOGGING SETUP (Step 1)
+# ==========================================
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device for training: {DEVICE}")
 
- 
-# 1. DATA PROCESSING PIPELINE CLASS  
- 
+# ==========================================
+# 1. DATA PROCESSING PIPELINE CLASS (Step 1)
+# ==========================================
 class FoodscapeDataPipeline:
     def __init__(self, filepath):
         self.filepath = filepath
@@ -70,9 +70,9 @@ class FoodscapeDataPipeline:
         logger.info(f"Feature normalization complete. Input dimension: {self.X_scaled.shape[1]}")
         return self.X_scaled
 
- 
+# ==========================================
 # 2. PYTORCH AUTOENCODER MODEL
- 
+# ==========================================
 class FoodscapeAutoencoder(nn.Module):
     def __init__(self, input_dim, embedding_dim=4):
         super().__init__()
@@ -96,19 +96,40 @@ class FoodscapeAutoencoder(nn.Module):
         reconstructed = self.decoder(embedding)
         return reconstructed, embedding
 
- 
-# 3. MODEL TRAINER CLASS WITH DATALOADER  
- 
+# ==========================================
+# 3. EARLY STOPPING MECHANISM (Step 3)
+# ==========================================
+class EarlyStopping:
+    def __init__(self, patience=50, min_delta=1e-5):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.best_loss = float('inf')
+        self.early_stop = False
+
+    def __call__(self, current_loss):
+        if current_loss < self.best_loss - self.min_delta:
+            self.best_loss = current_loss
+            self.counter = 0
+        else:
+            self.counter += 1
+            if self.counter >= self.patience:
+                self.early_stop = True
+
+# ==========================================
+# 4. MODEL TRAINER CLASS WITH DATALOADER & EARLY STOPPING
+# ==========================================
 class AutoencoderTrainer:
-    def __init__(self, model, learning_rate=0.001, batch_size=8):
+    def __init__(self, model, learning_rate=0.001, batch_size=8, patience=50):
         self.model = model.to(DEVICE)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.criterion = nn.MSELoss()
         self.batch_size = batch_size
+        self.early_stopping = EarlyStopping(patience=patience)  # Wired up here (Step 3)
 
     def fit(self, X_data, max_epochs=1000):
         tensor_x = torch.FloatTensor(X_data)
-        dataset = TensorDataset(tensor_x, tensor_x)  # Self-reconstruction task
+        dataset = TensorDataset(tensor_x, tensor_x)
         dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
         
         logger.info("Initiating model training loop via PyTorch DataLoader...")
@@ -128,16 +149,22 @@ class AutoencoderTrainer:
                 
             total_epoch_loss = epoch_loss / len(X_data)
             
-            if (epoch + 1) % 100 == 0:
+            # Feed current loss to check early stopping threshold (Step 3)
+            self.early_stopping(total_epoch_loss)
+            
+            if (epoch + 1) % 50 == 0 or self.early_stopping.early_stop:
                 logger.info(f"Epoch [{epoch+1}/{max_epochs}] - Training Loss: {total_epoch_loss:.5f}")
+                
+            if self.early_stopping.early_stop:
+                logger.info(f"Early stopping triggered at epoch {epoch+1}. Halting training loop.")
+                break
                 
         return self.model
 
- 
-# 4. MAIN RUNTIME EXECUTION
- 
+# ==========================================
+# 5. MAIN RUNTIME EXECUTION
+# ==========================================
 if __name__ == "__main__":
-    # Data Processing Pipeline execution
     pipeline = FoodscapeDataPipeline('foodscape_data.csv')
     district_df = pipeline.load_and_engineer_features()
     X_scaled = pipeline.scale_features()
@@ -145,12 +172,10 @@ if __name__ == "__main__":
     print(district_df.set_index('district'))
     print(f"\nFeature matrix shape: {X_scaled.shape}")
 
-    # Initialize Model and the new Trainer Class (Step 2)
     model = FoodscapeAutoencoder(input_dim=X_scaled.shape[1], embedding_dim=4)
-    trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8)
+    trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8, patience=50)
     trained_model = trainer.fit(X_scaled, max_epochs=1000)
 
-    # Extract latent embeddings safely using torch.no_grad()
     trained_model.eval()
     with torch.no_grad():
         full_tensor = torch.FloatTensor(X_scaled).to(DEVICE)
@@ -159,7 +184,6 @@ if __name__ == "__main__":
 
     print("\nEmbeddings shape:", embeddings_np.shape)
 
-    # Clustering
     kmeans = KMeans(n_clusters=4, random_state=42)
     clusters = kmeans.fit_predict(embeddings_np)
 
@@ -167,7 +191,6 @@ if __name__ == "__main__":
     print("\nDistrict clusters:")
     print(district_df[['district', 'cluster']].sort_values('cluster'))
 
-    # Visualise clusters on map
     colors = ['red', 'blue', 'green', 'purple']
     cluster_names = ['Mixed/Suburban', 'Outer Districts', 'Central Hub', 'Cafe District']
 
@@ -195,6 +218,5 @@ if __name__ == "__main__":
     m.save('cluster_map.html')
     print("Saved cluster_map.html")
 
-    # Serialize model weights
     torch.save(trained_model.state_dict(), 'foodscape_model.pth')
     print("Model saved to foodscape_model.pth")
