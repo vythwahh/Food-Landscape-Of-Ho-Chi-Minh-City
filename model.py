@@ -59,7 +59,12 @@ class FoodscapeDataPipeline:
         )
         
         self.district_df = district_counts.to_frame().join(grouped).reset_index()
+        # Use log transformation to handle skewness in total_places and create a confidence score feature
         logger.info(f"Feature engineering completed. Shape: {self.district_df.shape}")
+        log_places = np.log1p(self.district_df['total_places'])
+        self.district_df['data_confidence_score'] = log_places / (self.district_df['unknown_cuisine_ratio'] + 1.0)
+        logger.info(f"Feature engineering completed with Confidence Scores. Shape: {self.district_df.shape}")
+         
         return self.district_df
 
     def scale_features(self):
@@ -70,8 +75,7 @@ class FoodscapeDataPipeline:
         logger.info(f"Feature normalization complete. Input dimension: {self.X_scaled.shape[1]}")
         return self.X_scaled
 
- 
-# 2. PYTORCH AUTOENCODER MODEL
+ # 2. PYTORCH AUTOENCODER MODEL
  
 class FoodscapeAutoencoder(nn.Module):
     def __init__(self, input_dim, embedding_dim=4):
@@ -97,6 +101,7 @@ class FoodscapeAutoencoder(nn.Module):
         return reconstructed, embedding
 
  
+# 3. EARLY STOPPING MECHANISM
  
 class EarlyStopping:
     def __init__(self, patience=50, min_delta=1e-5):
@@ -173,6 +178,8 @@ if __name__ == "__main__":
 
     model = FoodscapeAutoencoder(input_dim=X_scaled.shape[1], embedding_dim=4)
     trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8, patience=50)
+    total_places_arr = district_df['total_places'].values
+    trained_model = trainer.fit(X_scaled, total_places_arr, max_epochs=1000)
     trained_model = trainer.fit(X_scaled, max_epochs=1000)
 
     trained_model.eval()
@@ -219,4 +226,4 @@ if __name__ == "__main__":
     logger.info("Saved cluster_map.html successfully.")
 
     torch.save(trained_model.state_dict(), 'foodscape_model.pth')
-    logger.info("Model state weights serialized to foodscape_model.pth successfully.")
+    logger.info("Model state weights serialized to foodscape_model.pth successfully!")
