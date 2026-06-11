@@ -128,26 +128,40 @@ class AutoencoderTrainer:
     def __init__(self, model, learning_rate=0.001, batch_size=8, patience=50):
         self.model = model.to(DEVICE)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
-        self.criterion = nn.MSELoss()
+        self.criterion = nn.MSELoss(reduction='none') # Sửa ở đây để nhân trọng số từng hàng
         self.batch_size = batch_size
         self.early_stopping = EarlyStopping(patience=patience)
 
-    def fit(self, X_data, max_epochs=1000):
+    def fit(self, X_data, total_places_arr, max_epochs=1000):
         tensor_x = torch.FloatTensor(X_data)
-        dataset = TensorDataset(tensor_x, tensor_x)
+        
+         
+        weights = 1.0 / (total_places_arr + 1.0)
+        weights = weights / weights.sum() * len(weights)
+        tensor_weights = torch.FloatTensor(weights)
+        
+ 
+        dataset = TensorDataset(tensor_x, tensor_x, tensor_weights)
         dataloader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
         
-        logger.info("Initiating model training loop via PyTorch DataLoader...")
+        logger.info("Initiating Spatial-Weighted model training loop via PyTorch DataLoader...")
         
         for epoch in range(max_epochs):
             self.model.train()
             epoch_loss = 0.0
             
-            for batch_x, _ in dataloader:
+            for batch_x, _, batch_w in dataloader:
                 batch_x = batch_x.to(DEVICE)
+                batch_w = batch_w.to(DEVICE)
+                
                 self.optimizer.zero_grad()
                 reconstructed, _ = self.model(batch_x)
-                loss = self.criterion(reconstructed, batch_x)
+                
+                 
+                loss_elementwise = (reconstructed - batch_x) ** 2
+                weighted_loss = loss_elementwise * batch_w.unsqueeze(1)
+                loss = weighted_loss.mean()
+                
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item() * batch_x.size(0)
@@ -156,7 +170,7 @@ class AutoencoderTrainer:
             self.early_stopping(total_epoch_loss)
             
             if (epoch + 1) % 50 == 0 or self.early_stopping.early_stop:
-                logger.info(f"Epoch [{epoch+1}/{max_epochs}] - Training Loss: {total_epoch_loss:.5f}")
+                logger.info(f"Epoch [{epoch+1}/{max_epochs}] - Weighted Training Loss: {total_epoch_loss:.5f}")
                 
             if self.early_stopping.early_stop:
                 logger.info(f"Early stopping triggered at epoch {epoch+1}. Halting training loop.")
@@ -180,7 +194,7 @@ if __name__ == "__main__":
     trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8, patience=50)
     total_places_arr = district_df['total_places'].values
     trained_model = trainer.fit(X_scaled, total_places_arr, max_epochs=1000)
-    trained_model = trainer.fit(X_scaled, max_epochs=1000)
+     
 
     trained_model.eval()
     with torch.no_grad():
