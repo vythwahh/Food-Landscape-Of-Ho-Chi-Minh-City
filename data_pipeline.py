@@ -73,3 +73,48 @@ class FoodscapeDataPipeline:
         
         logger.info(f"Spatial District Imputation complete. Resolved {impute_count} missing rows.")
         return self
+    def impute_missing_cuisine_knn(self, k_neighbors=5, radius_meters=500):
+        """Imputes missing cuisine entries via Spatial K-Nearest Neighbors using haversine metric within a radius."""
+        # Convert 500m radius to radians approximate for BallTree earth radius conversion
+        earth_radius_meters = 6371000.0
+        radius_radians = radius_meters / earth_radius_meters
+
+        # Mask rows where cuisine is known vs missing
+        known_mask = self.df['cuisine'].notna() & (self.df['cuisine'] != 'unknown')
+        missing_mask = self.df['cuisine'].isna() | (self.df['cuisine'] == 'unknown')
+
+        if not missing_mask.any() or not known_mask.any():
+            logger.info("No spatial cuisine imputation required or insufficient reference samples available.")
+            return self
+
+        # Extract radians for the spatial index
+        known_coords = np.radians(self.df[known_mask][['latitude', 'longitude']].values)
+        missing_coords = np.radians(self.df[missing_mask][['latitude', 'longitude']].values)
+
+        # Build BallTree spatial indexing engine
+        tree = BallTree(known_coords, metric='haversine')
+        
+        # Query matching candidates within the specified metric scope
+        indices, distances = tree.query_radius(missing_coords, r=radius_radians, return_distance=True)
+        
+        known_cuisines = self.df[known_mask]['cuisine'].values
+        impute_count = 0
+
+        for missing_idx, (local_indices, local_distances) in enumerate(zip(indices, distances)):
+            if len(local_indices) == 0:
+                continue # No nearby places found within 500m, keep as unknown
+            
+            # Sort by distance and slice top K neighbors
+            sorted_args = np.argsort(local_distances)[:k_neighbors]
+            neighbor_indices = local_indices[sorted_args]
+            neighbor_cuisines = known_cuisines[neighbor_indices]
+            
+            # Extract majority mode cuisine
+            if len(neighbor_cuisines) > 0:
+                majority_cuisine = pd.Series(neighbor_cuisines).mode()[0]
+                actual_df_idx = self.df[missing_mask].index[missing_idx]
+                self.df.at[actual_df_idx, 'cuisine'] = majority_cuisine
+                impute_count += 1
+
+        logger.info(f"Spatial Cuisine Imputation complete. Resolved {impute_count} missing cells using KNN.")
+        return self
