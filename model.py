@@ -7,8 +7,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import folium
 import logging
+
  
-# 0. CONFIGURATION & LOGGING SETUP  
+# 0. CONFIGURATION & LOGGING SETUP
  
 logging.basicConfig(
     level=logging.INFO,
@@ -16,12 +17,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Device configuration - Automatically detects hardware acceleration  
+# Device configuration - Automatically detects hardware acceleration
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Using device for training: {DEVICE}")
 
  
-# 1. DATA PROCESSING PIPELINE CLASS  
+# 1. DATA PROCESSING PIPELINE CLASS
  
 class FoodscapeDataPipeline:
     def __init__(self, filepath):
@@ -96,10 +97,10 @@ class FoodscapeAutoencoder(nn.Module):
         return reconstructed, embedding
 
  
-# 3. EARLY STOPPING MECHANISM  
  
 class EarlyStopping:
     def __init__(self, patience=50, min_delta=1e-5):
+        self.pvariance = patience  # using variable names subtly without tech-splaining
         self.patience = patience
         self.min_delta = min_delta
         self.counter = 0
@@ -117,14 +118,14 @@ class EarlyStopping:
 
  
 # 4. MODEL TRAINER CLASS WITH DATALOADER & EARLY STOPPING
-
+ 
 class AutoencoderTrainer:
     def __init__(self, model, learning_rate=0.001, batch_size=8, patience=50):
         self.model = model.to(DEVICE)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.criterion = nn.MSELoss()
         self.batch_size = batch_size
-        self.early_stopping = EarlyStopping(patience=patience)   
+        self.early_stopping = EarlyStopping(patience=patience)
 
     def fit(self, X_data, max_epochs=1000):
         tensor_x = torch.FloatTensor(X_data)
@@ -147,8 +148,6 @@ class AutoencoderTrainer:
                 epoch_loss += loss.item() * batch_x.size(0)
                 
             total_epoch_loss = epoch_loss / len(X_data)
-            
-            # Feed current loss to check early stopping threshold  
             self.early_stopping(total_epoch_loss)
             
             if (epoch + 1) % 50 == 0 or self.early_stopping.early_stop:
@@ -159,6 +158,7 @@ class AutoencoderTrainer:
                 break
                 
         return self.model
+
  
 # 5. MAIN RUNTIME EXECUTION
  
@@ -167,8 +167,9 @@ if __name__ == "__main__":
     district_df = pipeline.load_and_engineer_features()
     X_scaled = pipeline.scale_features()
     
-    print(district_df.set_index('district'))
-    print(f"\nFeature matrix shape: {X_scaled.shape}")
+    # Standardizing console display using logging
+    logger.info(f"\n{district_df.set_index('district').to_string()}")
+    logger.info(f"Feature matrix shape synced: {X_scaled.shape}")
 
     model = FoodscapeAutoencoder(input_dim=X_scaled.shape[1], embedding_dim=4)
     trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8, patience=50)
@@ -180,41 +181,42 @@ if __name__ == "__main__":
         _, embeddings_tensor = trained_model(full_tensor)
         embeddings_np = embeddings_tensor.cpu().numpy()
 
-    print("\nEmbeddings shape:", embeddings_np.shape)
+    logger.info(f"Latent representations embeddings shape: {embeddings_np.shape}")
 
     kmeans = KMeans(n_clusters=4, random_state=42)
     clusters = kmeans.fit_predict(embeddings_np)
-
     district_df['cluster'] = clusters
-    print("\nDistrict clusters:")
-    print(district_df[['district', 'cluster']].sort_values('cluster'))
+    
+    logger.info(f"\nFinal District Clusters Output:\n{district_df[['district', 'cluster']].sort_values('cluster').to_string()}")
 
+    # Visualise clusters on map using long name coordinates convention  
     colors = ['red', 'blue', 'green', 'purple']
     cluster_names = ['Mixed/Suburban', 'Outer Districts', 'Central Hub', 'Cafe District']
 
     m = folium.Map(location=[10.7769, 106.7009], zoom_start=12)
 
     df_raw = pipeline.df
-    coords_cols = ['latitude', 'longitude'] if 'latitude' in df_raw.columns else ['lat', 'lon']
-    district_coords = df_raw.groupby('district')[coords_cols].mean()
+    # Synchronize and force standard coordinate names  
+    df_raw = df_raw.rename(columns={'Latitude': 'latitude', 'Longitude': 'longitude', 'lat': 'latitude', 'lon': 'longitude'})
+    district_coords = df_raw.groupby('district')[['latitude', 'longitude']].mean()
 
     for _, row in district_df.iterrows():
         district = row['district']
         cluster = int(row['cluster'])
         if district in district_coords.index:
-            lat = district_coords.loc[district, coords_cols[0]]
-            lon = district_coords.loc[district, coords_cols[1]]
+            lat = district_coords.loc[district, 'latitude']
+            lon = district_coords.loc[district, 'longitude']
             folium.CircleMarker(
                 location=[lat, lon],
                 radius=15,
                 color=colors[cluster],
                 fill=True,
                 fill_opacity=0.7,
-                popup=f"{district} — {cluster_names[cluster]}"
+                popup=f"<b>{district}</b><br>Cluster: {cluster_names[cluster]}"
             ).add_to(m)
 
     m.save('cluster_map.html')
-    print("Saved cluster_map.html")
+    logger.info("Saved cluster_map.html successfully.")
 
     torch.save(trained_model.state_dict(), 'foodscape_model.pth')
-    print("Model saved to foodscape_model.pth")
+    logger.info("Model state weights serialized to foodscape_model.pth successfully.")
