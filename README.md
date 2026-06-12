@@ -81,5 +81,5 @@ python main.py
 Once main.py completes training and serializes the processed dataset, ignite the interactive Streamlit interface:
 ```
 streamlit run app.py
-[ĐÓNG KHỐI CODE]
+ 
 ```
