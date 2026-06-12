@@ -7,9 +7,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import folium
 import logging
-
+from data_pipeline import FoodscapeDataPipeline
  
-# 0. CONFIGURATION & LOGGING SETUP
+# CONFIGURATION & LOGGING SETUP
  
 logging.basicConfig(
     level=logging.INFO,
@@ -22,60 +22,7 @@ DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if 
 logger.info(f"Using device for training: {DEVICE}")
 
  
-# 1. DATA PROCESSING PIPELINE CLASS
- 
-class FoodscapeDataPipeline:
-    def __init__(self, filepath):
-        self.filepath = filepath
-        self.scaler = StandardScaler()
-        self.df = None
-        self.district_df = None
-        self.X_scaled = None
-
-    def load_and_engineer_features(self):
-        """Loads data and creates vectorized district-level spatial features."""
-        logger.info(f"Loading raw dataset from {self.filepath}")
-        self.df = pd.read_csv(self.filepath)
-        
-        district_counts = self.df.groupby('district').size().rename('total_places')
-        
-        self.df['is_restaurant'] = (self.df['amenity'] == 'restaurant').astype(int)
-        self.df['is_cafe'] = (self.df['amenity'] == 'cafe').astype(int)
-        self.df['is_fastfood'] = (self.df['amenity'] == 'fast_food').astype(int)
-        self.df['is_vietnamese'] = (self.df['cuisine'] == 'vietnamese').astype(int)
-        self.df['is_coffee'] = self.df['cuisine'].str.contains('coffee', na=False).astype(int)
-        self.df['is_international'] = self.df['cuisine'].isin(['burger', 'pizza', 'japanese', 'korean']).astype(int)
-        self.df['is_unknown'] = (self.df['cuisine'] == 'unknown').astype(int)
-
-        grouped = self.df.groupby('district').agg(
-            restaurant_ratio=('is_restaurant', 'mean'),
-            cafe_ratio=('is_cafe', 'mean'),
-            fastfood_ratio=('is_fastfood', 'mean'),
-            vietnamese_ratio=('is_vietnamese', 'mean'),
-            coffee_ratio=('is_coffee', 'mean'),
-            international_ratio=('is_international', 'mean'),
-            unknown_cuisine_ratio=('is_unknown', 'mean'),
-            cuisine_diversity=('cuisine', 'nunique')
-        )
-        
-        self.district_df = district_counts.to_frame().join(grouped).reset_index()
-        # Use log transformation to handle skewness in total_places and create a confidence score feature
-        logger.info(f"Feature engineering completed. Shape: {self.district_df.shape}")
-        log_places = np.log1p(self.district_df['total_places'])
-        self.district_df['data_confidence_score'] = log_places / (self.district_df['unknown_cuisine_ratio'] + 1.0)
-        logger.info(f"Feature engineering completed with Confidence Scores. Shape: {self.district_df.shape}")
-         
-        return self.district_df
-
-    def scale_features(self):
-        """Standardizes features for the Deep Learning network."""
-        feature_cols = [c for c in self.district_df.columns if c != 'district']
-        X = self.district_df[feature_cols].values
-        self.X_scaled = self.scaler.fit_transform(X)
-        logger.info(f"Feature normalization complete. Input dimension: {self.X_scaled.shape[1]}")
-        return self.X_scaled
-
- # 2. PYTORCH AUTOENCODER MODEL
+ # PYTORCH AUTOENCODER MODEL
  
 class FoodscapeAutoencoder(nn.Module):
     def __init__(self, input_dim, embedding_dim=4):
@@ -101,7 +48,7 @@ class FoodscapeAutoencoder(nn.Module):
         return reconstructed, embedding
 
  
-# 3. EARLY STOPPING MECHANISM
+# EARLY STOPPING MECHANISM
  
 class EarlyStopping:
     def __init__(self, patience=50, min_delta=1e-5):
@@ -122,7 +69,7 @@ class EarlyStopping:
                 self.early_stop = True
 
  
-# 4. MODEL TRAINER CLASS WITH DATALOADER & EARLY STOPPING
+#  MODEL TRAINER CLASS WITH DATALOADER & EARLY STOPPING
  
 class AutoencoderTrainer:
     def __init__(self, model, learning_rate=0.001, batch_size=8, patience=50):
@@ -179,23 +126,63 @@ class AutoencoderTrainer:
         return self.model
 
  
-# 5. MAIN RUNTIME EXECUTION
+# MAIN RUNTIME EXECUTION
  
 if __name__ == "__main__":
-    pipeline = FoodscapeDataPipeline('foodscape_data.csv')
-    district_df = pipeline.load_and_engineer_features()
-    X_scaled = pipeline.scale_features()
+     
+    pipeline = FoodscapeDataPipeline(filepath='foodscape_data.csv')
+    pipeline.load_data()
     
-    # Standardizing console display using logging
-    logger.info(f"\n{district_df.set_index('district').to_string()}")
-    logger.info(f"Feature matrix shape synced: {X_scaled.shape}")
+     
+    pipeline.impute_missing_districts()
+    pipeline.impute_missing_cuisine_knn(k_neighbors=5, radius_meters=500)
+    
+     
+    pipeline.engineer_features()
+    
+     
+    district_counts = pipeline.df.groupby('district').size().rename('total_places')
+    
+    pipeline.df['is_restaurant'] = (pipeline.df['amenity'] == 'restaurant').astype(int)
+    pipeline.df['is_cafe'] = (pipeline.df['amenity'] == 'cafe').astype(int)
+    pipeline.df['is_fastfood'] = (pipeline.df['amenity'] == 'fast_food').astype(int)
+    pipeline.df['is_vietnamese'] = (pipeline.df['cuisine'] == 'vietnamese').astype(int)
+    pipeline.df['is_coffee'] = pipeline.df['cuisine'].str.contains('coffee', na=False).astype(int)
+    pipeline.df['is_international'] = pipeline.df['cuisine'].isin(['burger', 'pizza', 'japanese', 'korean']).astype(int)
+    pipeline.df['is_unknown'] = (pipeline.df['cuisine'] == 'unknown').astype(int)
 
+    grouped = pipeline.df.groupby('district').agg(
+        restaurant_ratio=('is_restaurant', 'mean'),
+        cafe_ratio=('is_cafe', 'mean'),
+        fastfood_ratio=('is_fastfood', 'mean'),
+        vietnamese_ratio=('is_vietnamese', 'mean'),
+        coffee_ratio=('is_coffee', 'mean'),
+        international_ratio=('is_international', 'mean'),
+        unknown_cuisine_ratio=('is_unknown', 'mean'),
+        cuisine_diversity=('cuisine', 'nunique'),
+       
+        avg_food_density=('food_density_index', 'mean'),
+        avg_distance_to_center=('distance_to_center_hub_km', 'mean')
+    )
+    
+    pipeline.district_df = district_counts.to_frame().join(grouped).reset_index()
+    
+     
+    log_places = np.log1p(pipeline.district_df['total_places'])
+    pipeline.district_df['data_confidence_score'] = log_places / (pipeline.district_df['unknown_cuisine_ratio'] + 1.0)
+    
+     
+    X_scaled = pipeline.scale_features()
+    logger.info(f"Feature matrix shape synced with advanced spatial features: {X_scaled.shape}")
+
+     
     model = FoodscapeAutoencoder(input_dim=X_scaled.shape[1], embedding_dim=4)
     trainer = AutoencoderTrainer(model, learning_rate=0.001, batch_size=8, patience=50)
-    total_places_arr = district_df['total_places'].values
+    
+    total_places_arr = pipeline.district_df['total_places'].values
     trained_model = trainer.fit(X_scaled, total_places_arr, max_epochs=1000)
-     
 
+ 
     trained_model.eval()
     with torch.no_grad():
         full_tensor = torch.FloatTensor(X_scaled).to(DEVICE)
@@ -204,24 +191,22 @@ if __name__ == "__main__":
 
     logger.info(f"Latent representations embeddings shape: {embeddings_np.shape}")
 
+     
     kmeans = KMeans(n_clusters=4, random_state=42)
     clusters = kmeans.fit_predict(embeddings_np)
-    district_df['cluster'] = clusters
+    pipeline.district_df['cluster'] = clusters
     
-    logger.info(f"\nFinal District Clusters Output:\n{district_df[['district', 'cluster']].sort_values('cluster').to_string()}")
+    logger.info(f"\nFinal Enhanced District Clusters Output:\n{pipeline.district_df[['district', 'cluster']].sort_values('cluster').to_string()}")
 
-    # Visualise clusters on map using long name coordinates convention  
+     
     colors = ['red', 'blue', 'green', 'purple']
     cluster_names = ['Mixed/Suburban', 'Outer Districts', 'Central Hub', 'Cafe District']
 
     m = folium.Map(location=[10.7769, 106.7009], zoom_start=12)
-
     df_raw = pipeline.df
-    # Synchronize and force standard coordinate names  
-    df_raw = df_raw.rename(columns={'Latitude': 'latitude', 'Longitude': 'longitude', 'lat': 'latitude', 'lon': 'longitude'})
     district_coords = df_raw.groupby('district')[['latitude', 'longitude']].mean()
 
-    for _, row in district_df.iterrows():
+    for _, row in pipeline.district_df.iterrows():
         district = row['district']
         cluster = int(row['cluster'])
         if district in district_coords.index:
@@ -237,7 +222,8 @@ if __name__ == "__main__":
             ).add_to(m)
 
     m.save('cluster_map.html')
-    logger.info("Saved cluster_map.html successfully.")
+    logger.info("Saved enhanced cluster_map.html successfully.")
 
+ 
     torch.save(trained_model.state_dict(), 'foodscape_model.pth')
     logger.info("Model state weights serialized to foodscape_model.pth successfully!")
